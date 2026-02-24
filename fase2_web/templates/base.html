@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Tienda de Maquillaje - Sistema de gestión para tienda de maquillaje. Administra tu inventario y ventas de forma profesional.">
+    <title>{% block title %}Tienda de Maquillaje{% endblock %} | Sistema de Gestión</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- Sidebar de navegación -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-icon">💄</span>
+                <div class="logo-text">
+                    <h1>Tienda de Maquillaje</h1>
+                    <span class="logo-subtitle">Sistema de Gestión</span>
+                </div>
+            </div>
+        </div>
+
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="{{ url_for('dashboard.index') }}"
+                    class="nav-link {% if request.path == '/' %}active{% endif %}" id="nav-dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('productos.lista') }}"
+                    class="nav-link {% if '/productos' in request.path %}active{% endif %}" id="nav-productos">
+                    <span class="nav-icon">📦</span>
+                    <span class="nav-text">Productos</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('ventas.registrar') }}"
+                    class="nav-link {% if request.path == '/ventas/registrar' %}active{% endif %}" id="nav-nueva-venta">
+                    <span class="nav-icon">🛒</span>
+                    <span class="nav-text">Nueva Venta</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('ventas.historial') }}"
+                    class="nav-link {% if request.path == '/ventas/' or request.path == '/ventas' %}active{% endif %}"
+                    id="nav-historial">
+                    <span class="nav-icon">📜</span>
+                    <span class="nav-text">Historial</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('reportes.semanal') }}"
+                    class="nav-link {% if '/reportes' in request.path %}active{% endif %}" id="nav-reportes">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text">Reportes</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-footer-text">
+                <span>Tienda de Maquillaje v2.0</span>
+                <span class="footer-dot">•</span>
+                <span>Hecho con 💖</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+        <!-- Header superior -->
+        <header class="top-header">
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="header-left">
+                <h2 class="page-title">{% block page_title %}Dashboard{% endblock %}</h2>
+            </div>
+            <div class="header-right">
+                <div class="header-date" id="currentDate"></div>
+            </div>
+        </header>
+
+        <!-- Mensajes flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}" id="flash-msg">
+                <span class="flash-icon">
+                    {% if category == 'success' %}✅{% elif category == 'error' %}❌{% elif category == 'warning' %}⚠️{%
+                    else %}ℹ️{% endif %}
+                </span>
+                <span class="flash-text">{{ message }}</span>
+                <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Contenido de la página -->
+        <div class="content-area">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

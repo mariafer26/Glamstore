@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Agregar Producto{% endblock %}
+{% block page_title %}Agregar Nuevo Producto{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="form-container">
+        <div class="card">
+            <div class="card__header">
+                <h3>➕ Nuevo Producto</h3>
+                <a href="{{ url_for('productos.lista') }}" class="btn btn--outline btn--sm">
+                    ← Volver a la lista
+                </a>
+            </div>
+            <div class="card__body">
+                <form method="POST" action="{{ url_for('productos.agregar') }}" class="product-form"
+                    id="formAgregarProducto">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nombre" class="form-label">Nombre del Producto *</label>
+                            <input type="text" id="nombre" name="nombre" class="form-input"
+                                placeholder="Ej: Labial Matte Ultra" required
+                                value="{{ request.form.get('nombre', '') }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="marca" class="form-label">Marca *</label>
+                            <select id="marca" name="marca" class="form-select" required>
+                                <option value="">-- Selecciona una marca --</option>
+                                {% for m in marcas %}
+                                <option value="{{ m }}" {% if request.form.get('marca')==m %}selected{% endif %}>
+                                    {{ m }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="categoria" class="form-label">Categoría *</label>
+                            <select id="categoria" name="categoria" class="form-select" required>
+                                <option value="">-- Selecciona una categoría --</option>
+                                {% for cat in categorias %}
+                                <option value="{{ cat }}" {% if request.form.get('categoria')==cat %}selected{% endif
+                                    %}>
+                                    {{ cat }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="precio" class="form-label">Precio de Venta ($) *</label>
+                            <input type="number" id="precio" name="precio" class="form-input" placeholder="0.00"
+                                step="0.01" min="0.01" required value="{{ request.form.get('precio', '') }}">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cantidad_stock" class="form-label">Cantidad en Stock *</label>
+                            <input type="number" id="cantidad_stock" name="cantidad_stock" class="form-input"
+                                placeholder="0" min="0" required value="{{ request.form.get('cantidad_stock', '') }}">
+                            <span class="form-hint">⚠️ Se mostrará alerta si el stock es ≤ 5 unidades</span>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn--primary btn--lg" id="btnGuardarProducto">
+                            ✅ Registrar Producto
+                        </button>
+                        <a href="{{ url_for('productos.lista') }}" class="btn btn--outline btn--lg">
+                            Cancelar
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

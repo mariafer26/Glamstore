@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Productos{% endblock %}
+{% block page_title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <!-- Barra de acciones -->
+    <div class="page-actions" id="productos-actions">
+        <div class="page-actions__left">
+            <div class="filter-group">
+                <a href="{{ url_for('productos.lista') }}"
+                    class="filter-btn {% if not categoria_actual %}filter-btn--active{% endif %}">
+                    Todos
+                </a>
+                <div class="filter-dropdown">
+                    <button class="filter-btn filter-btn--dropdown" id="filterCategoriaBtn">
+                        📂 Categoría ▾
+                    </button>
+                    <div class="filter-dropdown__menu" id="filterCategoriaMenu">
+                        {% for cat in categorias %}
+                        <a href="{{ url_for('productos.lista', categoria=cat) }}"
+                            class="filter-dropdown__item {% if categoria_actual == cat %}filter-dropdown__item--active{% endif %}">
+                            {{ cat }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <a href="{{ url_for('productos.lista', stock_bajo=1) }}"
+                    class="filter-btn {% if request.args.get('stock_bajo') %}filter-btn--active filter-btn--warning{% endif %}">
+                    ⚠️ Stock Bajo
+                </a>
+            </div>
+        </div>
+        <div class="page-actions__right">
+            <a href="{{ url_for('productos.agregar') }}" class="btn btn--primary" id="btn-agregar-producto">
+                <span>➕</span> Agregar Producto
+            </a>
+        </div>
+    </div>
+
+    <!-- Tabla de productos -->
+    {% if productos %}
+    <div class="card">
+        <div class="table-responsive">
+            <table class="data-table" id="tabla-productos">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Producto</th>
+                        <th>Marca</th>
+                        <th>Categoría</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in productos %}
+                    <tr class="{% if producto.cantidad_stock <= stock_minimo %}row--warning{% endif %}"
+                        id="producto-row-{{ producto.id }}">
+                        <td class="td-id">#{{ '%03d' % producto.id }}</td>
+                        <td class="td-name">
+                            <strong>{{ producto.nombre }}</strong>
+                        </td>
+                        <td>{{ producto.marca }}</td>
+                        <td>
+                            <span class="category-badge">{{ producto.categoria }}</span>
+                        </td>
+                        <td class="td-price">{{ producto.precio | moneda }}</td>
+                        <td class="td-stock">
+                            <span
+                                class="stock-badge {% if producto.cantidad_stock == 0 %}stock-badge--danger{% elif producto.cantidad_stock <= stock_minimo %}stock-badge--warning{% else %}stock-badge--success{% endif %}">
+                                {{ producto.cantidad_stock }} uds
+                            </span>
+                        </td>
+                        <td>
+                            {% if producto.cantidad_stock == 0 %}
+                            <span class="status-dot status-dot--danger"></span> Sin stock
+                            {% elif producto.cantidad_stock <= stock_minimo %} <span
+                                class="status-dot status-dot--warning"></span> Bajo
+                                {% else %}
+                                <span class="status-dot status-dot--success"></span> OK
+                                {% endif %}
+                        </td>
+                        <td class="td-actions">
+                            <a href="{{ url_for('productos.editar', producto_id=producto.id) }}"
+                                class="btn btn--sm btn--outline" title="Editar" id="btn-editar-{{ producto.id }}">
+                                ✏️
+                            </a>
+                            <form method="POST" action="{{ url_for('productos.eliminar', producto_id=producto.id) }}"
+                                style="display:inline;"
+                                onsubmit="return confirm('¿Estás seguro de eliminar este producto?')">
+                                <button type="submit" class="btn btn--sm btn--danger-outline" title="Eliminar"
+                                    id="btn-eliminar-{{ producto.id }}">
+                                    🗑️
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="table-footer">
+        <span class="table-footer__count">{{ productos | length }} producto(s) encontrado(s)</span>
+    </div>
+
+    {% else %}
+    <div class="card">
+        <div class="empty-state empty-state--large">
+            <span class="empty-state__icon">📭</span>
+            <h3 class="empty-state__title">No hay productos</h3>
+            <p class="empty-state__text">
+                {% if request.args.get('stock_bajo') %}
+                ¡Excelente! Todos tus productos tienen stock suficiente.
+                {% elif categoria_actual %}
+                No hay productos en la categoría "{{ categoria_actual }}".
+                {% else %}
+                Comienza agregando tu primer producto al inventario.
+                {% endif %}
+            </p>
+            {% if not request.args.get('stock_bajo') %}
+            <a href="{{ url_for('productos.agregar') }}" class="btn btn--primary">
+                ➕ Agregar Producto
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toggle del dropdown de categorías
+    const filterBtn = document.getElementById('filterCategoriaBtn');
+    const filterMenu = document.getElementById('filterCategoriaMenu');
+
+    if (filterBtn && filterMenu) {
+        filterBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            filterMenu.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function () {
+            filterMenu.classList.remove('show');
+        });
+    }
+</script>
+{% endblock %}

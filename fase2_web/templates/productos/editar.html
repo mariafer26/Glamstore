@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Producto{% endblock %}
+{% block page_title %}Editar Producto{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="form-container">
+        <div class="card">
+            <div class="card__header">
+                <h3>✏️ Editar: {{ producto.nombre }}</h3>
+                <a href="{{ url_for('productos.lista') }}" class="btn btn--outline btn--sm">
+                    ← Volver a la lista
+                </a>
+            </div>
+            <div class="card__body">
+                <form method="POST" action="{{ url_for('productos.editar', producto_id=producto.id) }}"
+                    class="product-form" id="formEditarProducto">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nombre" class="form-label">Nombre del Producto</label>
+                            <input type="text" id="nombre" name="nombre" class="form-input"
+                                value="{{ producto.nombre }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="marca" class="form-label">Marca</label>
+                            <select id="marca" name="marca" class="form-select" required>
+                                {% for m in marcas %}
+                                <option value="{{ m }}" {% if producto.marca==m %}selected{% endif %}>
+                                    {{ m }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="categoria" class="form-label">Categoría</label>
+                            <select id="categoria" name="categoria" class="form-select" required>
+                                {% for cat in categorias %}
+                                <option value="{{ cat }}" {% if producto.categoria==cat %}selected{% endif %}>
+                                    {{ cat }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="precio" class="form-label">Precio de Venta ($)</label>
+                            <input type="number" id="precio" name="precio" class="form-input"
+                                value="{{ producto.precio }}" step="0.01" min="0.01" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cantidad_stock" class="form-label">Cantidad en Stock</label>
+                            <input type="number" id="cantidad_stock" name="cantidad_stock" class="form-input"
+                                value="{{ producto.cantidad_stock }}" min="0" required>
+                            {% if producto.cantidad_stock <= 5 %} <span class="form-hint form-hint--warning">⚠️ ¡Stock
+                                bajo! Considera reabastecer.</span>
+                                {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="product-info-card">
+                        <p><strong>ID:</strong> #{{ '%03d' % producto.id }}</p>
+                        <p><strong>Registrado:</strong> {{ producto.fecha_registro }}</p>
+                        {% if producto.fecha_actualizacion %}
+                        <p><strong>Última actualización:</strong> {{ producto.fecha_actualizacion }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn--primary btn--lg" id="btnActualizarProducto">
+                            ✅ Guardar Cambios
+                        </button>
+                        <a href="{{ url_for('productos.lista') }}" class="btn btn--outline btn--lg">
+                            Cancelar
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

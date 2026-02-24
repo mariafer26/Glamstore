@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Panel Principal{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+
+    <!-- Tarjetas de estadísticas principales -->
+    <div class="stats-grid">
+        <div class="stat-card stat-card--primary" id="card-total-productos">
+            <div class="stat-card__icon">📦</div>
+            <div class="stat-card__content">
+                <span class="stat-card__value">{{ stats.total_productos }}</span>
+                <span class="stat-card__label">Productos Registrados</span>
+            </div>
+            <div class="stat-card__footer">
+                <span>{{ stats.total_unidades }} unidades en stock</span>
+            </div>
+        </div>
+
+        <div class="stat-card stat-card--warning" id="card-stock-bajo">
+            <div class="stat-card__icon">⚠️</div>
+            <div class="stat-card__content">
+                <span class="stat-card__value">{{ stats.productos_stock_bajo }}</span>
+                <span class="stat-card__label">Stock Bajo</span>
+            </div>
+            <div class="stat-card__footer">
+                <a href="{{ url_for('productos.lista', stock_bajo=1) }}">Ver productos →</a>
+            </div>
+        </div>
+
+        <div class="stat-card stat-card--success" id="card-ventas-semana">
+            <div class="stat-card__icon">🛒</div>
+            <div class="stat-card__content">
+                <span class="stat-card__value">{{ stats.ventas_semana }}</span>
+                <span class="stat-card__label">Ventas esta Semana</span>
+            </div>
+            <div class="stat-card__footer">
+                <span>{{ stats.ventas_hoy }} ventas hoy</span>
+            </div>
+        </div>
+
+        <div class="stat-card stat-card--accent" id="card-ingresos">
+            <div class="stat-card__icon">💰</div>
+            <div class="stat-card__content">
+                <span class="stat-card__value">{{ stats.ingresos_semana | moneda }}</span>
+                <span class="stat-card__label">Ingresos Semana</span>
+            </div>
+            <div class="stat-card__footer">
+                <span>Hoy: {{ stats.ingresos_hoy | moneda }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección intermedia -->
+    <div class="dashboard-row">
+        <!-- Resumen general -->
+        <div class="card dashboard-summary" id="resumen-general">
+            <div class="card__header">
+                <h3>💎 Resumen General</h3>
+            </div>
+            <div class="card__body">
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="summary-item__label">Valor del Inventario</span>
+                        <span class="summary-item__value accent-text">{{ stats.valor_inventario | moneda }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-item__label">Ventas Totales (histórico)</span>
+                        <span class="summary-item__value">{{ stats.total_ventas_historico }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-item__label">Ingresos Totales</span>
+                        <span class="summary-item__value success-text">{{ stats.ingresos_totales | moneda }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-item__label">Productos Activos</span>
+                        <span class="summary-item__value">{{ stats.total_productos }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acciones rápidas -->
+        <div class="card quick-actions" id="acciones-rapidas">
+            <div class="card__header">
+                <h3>⚡ Acciones Rápidas</h3>
+            </div>
+            <div class="card__body">
+                <div class="actions-grid">
+                    <a href="{{ url_for('ventas.registrar') }}" class="action-btn action-btn--primary"
+                        id="btn-nueva-venta">
+                        <span class="action-btn__icon">🛒</span>
+                        <span class="action-btn__text">Nueva Venta</span>
+                    </a>
+                    <a href="{{ url_for('productos.agregar') }}" class="action-btn action-btn--secondary"
+                        id="btn-agregar-producto">
+                        <span class="action-btn__icon">➕</span>
+                        <span class="action-btn__text">Agregar Producto</span>
+                    </a>
+                    <a href="{{ url_for('reportes.semanal') }}" class="action-btn action-btn--accent"
+                        id="btn-ver-reporte">
+                        <span class="action-btn__icon">📊</span>
+                        <span class="action-btn__text">Ver Reporte</span>
+                    </a>
+                    <a href="{{ url_for('productos.lista', stock_bajo=1) }}" class="action-btn action-btn--warning"
+                        id="btn-stock-bajo">
+                        <span class="action-btn__icon">⚠️</span>
+                        <span class="action-btn__text">Stock Bajo</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección inferior -->
+    <div class="dashboard-row">
+        <!-- Alertas de stock -->
+        <div class="card" id="alertas-stock">
+            <div class="card__header">
+                <h3>⚠️ Alertas de Stock</h3>
+                {% if stats.alertas_stock %}
+                <span class="badge badge--warning">{{ stats.productos_stock_bajo }}</span>
+                {% endif %}
+            </div>
+            <div class="card__body">
+                {% if stats.alertas_stock %}
+                <div class="alert-list">
+                    {% for alerta in stats.alertas_stock %}
+                    <div class="alert-item">
+                        <div class="alert-item__info">
+                            <span
+                                class="alert-item__indicator {% if alerta.cantidad_stock == 0 %}indicator--danger{% else %}indicator--warning{% endif %}"></span>
+                            <span class="alert-item__name">{{ alerta.nombre }}</span>
+                        </div>
+                        <div class="alert-item__stock">
+                            <span
+                                class="stock-badge {% if alerta.cantidad_stock == 0 %}stock-badge--danger{% else %}stock-badge--warning{% endif %}">
+                                {{ alerta.cantidad_stock }} uds
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <span class="empty-state__icon">✅</span>
+                    <p class="empty-state__text">Todos los productos tienen stock suficiente</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Ventas recientes -->
+        <div class="card" id="ventas-recientes">
+            <div class="card__header">
+                <h3>🕐 Ventas Recientes</h3>
+                <a href="{{ url_for('ventas.historial') }}" class="card__link">Ver todo →</a>
+            </div>
+            <div class="card__body">
+                {% if stats.ventas_recientes %}
+                <div class="sales-list">
+                    {% for venta in stats.ventas_recientes %}
+                    <div class="sale-item">
+                        <div class="sale-item__info">
+                            <span class="sale-item__id">#{{ '%03d' % venta.id }}</span>
+                            <span class="sale-item__date">{{ venta.fecha }}</span>
+                        </div>
+                        <span class="sale-item__total">{{ venta.total | moneda }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <span class="empty-state__icon">📭</span>
+                    <p class="empty-state__text">No hay ventas recientes</p>
+                    <a href="{{ url_for('ventas.registrar') }}" class="btn btn--primary btn--sm">Registrar primera
+                        venta</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

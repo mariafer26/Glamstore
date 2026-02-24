@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Historial de Ventas{% endblock %}
+{% block page_title %}Historial de Ventas{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <!-- Acciones -->
+    <div class="page-actions">
+        <div class="page-actions__left">
+            <span class="page-info">{{ ventas | length }} venta(s) | Total: {{ total_mostrado | moneda }}</span>
+        </div>
+        <div class="page-actions__right">
+            <a href="{{ url_for('ventas.registrar') }}" class="btn btn--primary" id="btn-nueva-venta">
+                🛒 Nueva Venta
+            </a>
+        </div>
+    </div>
+
+    {% if ventas %}
+
+    <!-- Detalle de venta individual (si se seleccionó una) -->
+    {% if venta_detalle %}
+    <div class="card sale-detail-card" id="detalle-venta">
+        <div class="card__header">
+            <h3>🧾 Detalle de Venta #{{ '%03d' % venta_detalle.id }}</h3>
+            <a href="{{ url_for('ventas.historial') }}" class="btn btn--outline btn--sm">Ver todo el historial</a>
+        </div>
+        <div class="card__body">
+            <div class="sale-detail">
+                <div class="sale-detail__info">
+                    <p><strong>📅 Fecha:</strong> {{ venta_detalle.fecha }}</p>
+                    <p><strong>📦 Items:</strong> {{ venta_detalle.cantidad_items }}</p>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Marca</th>
+                            <th>Precio Unit.</th>
+                            <th>Cantidad</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in venta_detalle["detalles"] %}
+                        <tr>
+                            <td><strong>{{ item.nombre_producto }}</strong></td>
+                            <td>{{ item.marca_producto }}</td>
+                            <td>{{ item.precio_unitario | moneda }}</td>
+                            <td>{{ item.cantidad }}</td>
+                            <td class="td-price">{{ item.subtotal | moneda }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4" class="text-right"><strong>TOTAL:</strong></td>
+                            <td class="td-price"><strong>{{ venta_detalle.total | moneda }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Lista de ventas -->
+    <div class="card">
+        <div class="card__header">
+            <h3>📜 Todas las Ventas</h3>
+        </div>
+        <div class="card__body">
+            <div class="table-responsive">
+                <table class="data-table" id="tabla-ventas">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Items</th>
+                            <th>Productos</th>
+                            <th>Total</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for venta in ventas %}
+                        <tr id="venta-row-{{ venta.id }}">
+                            <td class="td-id">#{{ '%03d' % venta.id }}</td>
+                            <td>{{ venta.fecha }}</td>
+                            <td>{{ venta.cantidad_items }}</td>
+                            <td>
+                                {% for item in venta["detalles"][:3] %}
+                                <span class="product-chip">{{ item.nombre_producto }} ×{{ item.cantidad }}</span>
+                                {% endfor %}
+                                {% if venta["detalles"] | length > 3 %}
+                                <span class="product-chip product-chip--more">+{{ venta["detalles"] | length - 3 }}
+                                    más</span>
+                                {% endif %}
+                            </td>
+                            <td class="td-price"><strong>{{ venta.total | moneda }}</strong></td>
+                            <td>
+                                <a href="{{ url_for('ventas.detalle', venta_id=venta.id) }}"
+                                    class="btn btn--sm btn--outline">
+                                    👁️ Ver
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="card">
+        <div class="empty-state empty-state--large">
+            <span class="empty-state__icon">📭</span>
+            <h3 class="empty-state__title">Sin ventas registradas</h3>
+            <p class="empty-state__text">Comienza registrando tu primera venta.</p>
+            <a href="{{ url_for('ventas.registrar') }}" class="btn btn--primary">
+                🛒 Registrar Venta
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

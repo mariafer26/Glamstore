@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Reporte Semanal{% endblock %}
+{% block page_title %}Reporte Semanal{% endblock %}
+
+{% block content %}
+<div class="page-container">
+
+    <!-- Período del reporte -->
+    <div class="report-period">
+        <span class="report-period__label">📅 Período:</span>
+        <span class="report-period__dates">{{ reporte.periodo.inicio }} — {{ reporte.periodo.fin }}</span>
+    </div>
+
+    <!-- Tarjetas de métricas principales -->
+    <div class="stats-grid">
+        <div class="stat-card stat-card--success" id="metric-ventas">
+            <div class="stat-card__icon">🛒</div>
+            <div class="stat-card__content">
+                <span class="stat-card__value">{{ reporte.total_ventas }}</span>
+                <span class="stat-card__label">Ventas Realizadas</span>
+            </div>
+        </div>
+
+        <div class="stat-card stat-card--accent" id="metric-ingresos">
+            <div class="stat-card__icon">💰</div>
+            <div class="stat-card__content">
+                <span class="stat-card__value">{{ reporte.total_ingresos | moneda }}</span>
+                <span class="stat-card__label">Ingresos Totales</span>
+            </div>
+        </div>
+
+        <div class="stat-card stat-card--primary" id="metric-promedio">
+            <div class="stat-card__icon">📈</div>
+            <div class="stat-card__content">
+                <span class="stat-card__value">{{ reporte.promedio_por_venta | moneda }}</span>
+                <span class="stat-card__label">Promedio por Venta</span>
+            </div>
+        </div>
+
+        <div class="stat-card stat-card--warning" id="metric-stock-bajo">
+            <div class="stat-card__icon">⚠️</div>
+            <div class="stat-card__content">
+                <span class="stat-card__value">{{ reporte.productos_stock_bajo }}</span>
+                <span class="stat-card__label">Productos Stock Bajo</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de productos más vendidos y categorías -->
+    <div class="dashboard-row">
+
+        <!-- Productos más vendidos -->
+        <div class="card" id="top-productos">
+            <div class="card__header">
+                <h3>🏆 Productos Más Vendidos</h3>
+            </div>
+            <div class="card__body">
+                {% if reporte.productos_mas_vendidos %}
+                <div class="ranking-list">
+                    {% for prod in reporte.productos_mas_vendidos %}
+                    <div class="ranking-item">
+                        <div class="ranking-item__position">
+                            {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else
+                            %}{{ loop.index }}{% endif %}
+                        </div>
+                        <div class="ranking-item__info">
+                            <span class="ranking-item__name">{{ prod.nombre }}</span>
+                            <div class="ranking-item__bar-container">
+                                {% set max_cant = reporte.productos_mas_vendidos[0].cantidad if
+                                reporte.productos_mas_vendidos else 1 %}
+                                {% set porcentaje = (prod.cantidad / max_cant * 100) if max_cant > 0 else 0 %}
+                                <div class="ranking-item__bar" style="width: {{ porcentaje }}%"></div>
+                            </div>
+                        </div>
+                        <span class="ranking-item__value">{{ prod.cantidad }} uds</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <span class="empty-state__icon">📭</span>
+                    <p class="empty-state__text">Sin datos de ventas en este período</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Productos que más generaron ingresos -->
+        <div class="card" id="top-ingresos">
+            <div class="card__header">
+                <h3>💵 Mayor Ingreso Generado</h3>
+            </div>
+            <div class="card__body">
+                {% if reporte.ingresos_por_producto %}
+                <div class="ranking-list">
+                    {% for prod in reporte.ingresos_por_producto %}
+                    <div class="ranking-item">
+                        <div class="ranking-item__position">{{ loop.index }}</div>
+                        <div class="ranking-item__info">
+                            <span class="ranking-item__name">{{ prod.nombre }}</span>
+                            <div class="ranking-item__bar-container">
+                                {% set max_ing = reporte.ingresos_por_producto[0].ingresos if
+                                reporte.ingresos_por_producto else 1 %}
+                                {% set porcentaje = (prod.ingresos / max_ing * 100) if max_ing > 0 else 0 %}
+                                <div class="ranking-item__bar ranking-item__bar--accent"
+                                    style="width: {{ porcentaje }}%"></div>
+                            </div>
+                        </div>
+                        <span class="ranking-item__value">{{ prod.ingresos | moneda }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <span class="empty-state__icon">📭</span>
+                    <p class="empty-state__text">Sin datos de ingresos</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Ventas por categoría y alertas de stock -->
+    <div class="dashboard-row">
+
+        <!-- Ventas por categoría -->
+        <div class="card" id="ventas-categoria">
+            <div class="card__header">
+                <h3>📂 Ventas por Categoría</h3>
+            </div>
+            <div class="card__body">
+                {% if reporte.ventas_por_categoria %}
+                <div class="ranking-list">
+                    {% for cat in reporte.ventas_por_categoria %}
+                    <div class="ranking-item">
+                        <div class="ranking-item__info">
+                            <span class="ranking-item__name">{{ cat.categoria }}</span>
+                            <div class="ranking-item__bar-container">
+                                {% set max_cat = reporte.ventas_por_categoria[0].cantidad if
+                                reporte.ventas_por_categoria else 1 %}
+                                {% set porcentaje = (cat.cantidad / max_cat * 100) if max_cat > 0 else 0 %}
+                                <div class="ranking-item__bar ranking-item__bar--gradient"
+                                    style="width: {{ porcentaje }}%"></div>
+                            </div>
+                        </div>
+                        <span class="ranking-item__value">{{ cat.cantidad }} uds</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <span class="empty-state__icon">📭</span>
+                    <p class="empty-state__text">Sin datos de categorías</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Alertas de stock -->
+        <div class="card" id="alertas-reporte">
+            <div class="card__header">
+                <h3>⚠️ Alertas de Stock</h3>
+                {% if reporte.alertas_stock %}
+                <span class="badge badge--warning">{{ reporte.productos_stock_bajo }}</span>
+                {% endif %}
+            </div>
+            <div class="card__body">
+                {% if reporte.alertas_stock %}
+                <div class="alert-list">
+                    {% for alerta in reporte.alertas_stock %}
+                    <div class="alert-item">
+                        <div class="alert-item__info">
+                            <span
+                                class="alert-item__indicator {% if alerta.stock == 0 %}indicator--danger{% else %}indicator--warning{% endif %}"></span>
+                            <span class="alert-item__name">{{ alerta.nombre }}</span>
+                        </div>
+                        <div class="alert-item__stock">
+                            <span
+                                class="stock-badge {% if alerta.stock == 0 %}stock-badge--danger{% else %}stock-badge--warning{% endif %}">
+                                {{ alerta.stock }} uds
+                            </span>
+                            <a href="{{ url_for('productos.editar', producto_id=alerta.id) }}"
+                                class="btn btn--sm btn--outline">
+                                Reabastecer
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <span class="empty-state__icon">✅</span>
+                    <p class="empty-state__text">Todos los productos tienen stock suficiente</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
